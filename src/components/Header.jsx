@@ -15,7 +15,7 @@ return(
                         
             <li className="nav-link"><a href="/about">About</a></li>
 
-            <li className="nav-link"><a href="/contact">Contact</a></li>
+            <li className="nav-link"><a ㄔㄛhref="/contact">Contact</a></li>
 
             <li className="nav-link"><a href="/login">Login</a></li>
 
