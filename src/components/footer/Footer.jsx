@@ -12,7 +12,7 @@ return(
        target="_blank" 
        aria-hidden="true"
         rel="noreferrer"
-        className="text-primary font-semibold px-1 transition-colors duration-300 hover:text-dark">
+        className="text-primary font-semibold px-1 transition-colors duration-300 hover:text-emerald-400">
       Eazybytes</a>
   </footer>
 );
