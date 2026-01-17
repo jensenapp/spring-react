@@ -2,7 +2,7 @@ import React from "react";
 import ProductCard from "./ProductCard";
 import SearchBox from "./SearchBox";
 import DropDown  from "./Dropdown";
-import { useState } from "react";
+import { useState,useMemo } from "react";
 
 export default function ProductListings({ products }) {
 
@@ -10,6 +10,39 @@ export default function ProductListings({ products }) {
 
     const [searchText, setSearchText] = useState("");
     const [selectedSort,setSelectedSort]=useState("Popularity");
+
+
+
+   // 使用 useMemo 包裹計算邏輯
+  const filteredAndSortedProducts = useMemo(() => {
+    // A. 安全性檢查：若無產品則回傳空陣列
+    if (!Array.isArray(products) || products.length === 0) {
+      return [];
+    }
+
+    // B. Filtering Logic (過濾邏輯)
+    // 根據 searchText 過濾產品名稱或描述
+    let filteredProducts = products.filter((product) =>
+        product.name.toLowerCase().includes(searchText.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchText.toLowerCase())
+    );
+
+    // C. Sorting Logic (排序邏輯)
+    // 注意：使用 slice() 建立淺拷貝，避免直接修改原始 filteredProducts 陣列 (Sort 是會改變原陣列的 mutation method)
+    return filteredProducts.slice().sort((a, b) => {
+        switch (selectedSort) {
+            case "Price Low to High":
+                return a.price - b.price;
+            case "Price High to Low":
+                return b.price - a.price;
+            case "Popularity":
+            default:
+                // 假設 popularity 是數值或可比較的值
+                return b.popularity - a.popularity; 
+        }
+    });
+
+  }, [products, searchText, selectedSort]); // D. 依賴陣列：只有這三個變數改變時，才重新執行上述邏輯
 
   function handleSearchChange(inputText){
     setSearchText(inputText);
@@ -19,40 +52,6 @@ export default function ProductListings({ products }) {
     setSelectedSort(sortType);
 }
 
-// 這段邏輯在每次渲染時都會執行
-let filteredAndSortedProducts = Array.isArray(products) && products.length > 0 
-  ? products.filter((product) => {
-      // 將名稱與搜尋文字都轉為小寫比對 (Case-insensitive)
-      // 比對範圍包含：產品名稱 (Name) 或 描述 (Description)
-      return (
-        product.name.toLowerCase().includes(searchText.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchText.toLowerCase())
-      );
-    })
-  : []; // 若無產品資料，回傳空陣列
-
-
-  //排序邏輯
-switch (selectedSort) {
-  case "Price High to Low":
-        filteredAndSortedProducts=filteredAndSortedProducts.sort((a,b)=>{
-      return parseFloat(b.price)-parseFloat(a.price);
-    });
-    break;
-
-    case "Price Low to High":
-        filteredAndSortedProducts=filteredAndSortedProducts.sort((a,b)=>{
-      return parseInt(a.price)-parseInt(b.price);
-    });
-    break;
-
-    case "Popularity":
-  default:
-    filteredAndSortedProducts=filteredAndSortedProducts.sort((a,b)=>{
-      return parseInt(b.popularity)-parseInt(a.popularity);
-    });
-    break;
-}
 
 
   return (
