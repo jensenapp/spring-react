@@ -3,7 +3,7 @@ import React from "react";
 export default function Dropdown({
   label,
   options,
-  selectedValue,
+  value,
   handleSort,
 }) {
   return (
@@ -11,8 +11,8 @@ export default function Dropdown({
       <label className="text-lg font-semibold text-primary">{label}</label>
       <select
         className="px-3 py-2 text-base border rounded-md transition border-primary focus:ring focus:ring-dark focus:outline-none text-gray-900"
-        value={selectedValue}
-        onChange={(event) => handleSort(event.target.value)}
+        value={value}
+        onChange={(event)=>{handleSort(event.target.value)}}
       >
         {options.map((optionVal, index) => (
           <option key={index} value={optionVal}>
