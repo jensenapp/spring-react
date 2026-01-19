@@ -1,42 +1,55 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faShoppingBasket, faTags } from "@fortawesome/free-solid-svg-icons";
+import { useState } from "react";
+import { Link} from "react-router-dom";
+import { NavLink } from 'react-router-dom';
+
 
 export default function Header() {
   const navLinkClass =
     "text-center text-lg font-primary font-semibold text-primary py-2";
+
+    const[theme,setTheme]=useState("light");
+
+
   return (
     <header className="border-b border-gray-300 sticky top-0 z-20 bg-gray-100">
       <div className="flex items-center justify-between mx-auto max-w-[1152px] px-6 py-4">
-        <a href="/" className={navLinkClass}>
+        <Link to="/" className={navLinkClass}>
           <FontAwesomeIcon icon={faTags} className="h-8 w-8" />
           <span className="font-bold">Eazy Stickers</span>
-        </a>
+        </Link>
         <nav className="flex items-center py-2 z-10">
+          
           <ul className="flex space-x-6">
             <li>
-              <a href="/" className={navLinkClass}>
+              <NavLink to="/" className={({ isActive }) => 
+    isActive ? `underline ${navLinkClass}` : navLinkClass}>
                 Home
-              </a>
+              </NavLink>
             </li>
             <li>
-              <a href="/about" className={navLinkClass}>
+              <NavLink to="/about" className={({ isActive }) => 
+    isActive ? `underline ${navLinkClass}` : navLinkClass}>
                 About
-              </a>
+              </NavLink>
             </li>
             <li>
-              <a href="/contact" className={navLinkClass}>
+              <NavLink to="/contact" className={({ isActive }) => 
+    isActive ? `underline ${navLinkClass}` : navLinkClass}>
                 Contact
-              </a>
+              </NavLink>
             </li>
             <li>
-              <a href="/login" className={navLinkClass}>
+              <NavLink to="/login" className={({ isActive }) => 
+    isActive ? `underline ${navLinkClass}` : navLinkClass}>
                 Login
-              </a>
+              </NavLink>
             </li>
             <li>
-              <a href="/cart" className="text-primary py-2">
+              <Link to="/cart" className="text-primary py-2">
                 <FontAwesomeIcon icon={faShoppingBasket} />
-              </a>
+              </Link>
             </li>
           </ul>
         </nav>
