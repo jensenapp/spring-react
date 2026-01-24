@@ -13,6 +13,9 @@ import { productsLoader } from "./components/Home.jsx";
 
 import { ToastContainer, Bounce } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css"; 
+import ProductDetail from './components/ProductDetail.jsx';
+import { CartProvider } from './store/cart-context';
+
 
 // 定義路由變數
 const routeDefinitions = createRoutesFromElements(
@@ -26,11 +29,14 @@ const routeDefinitions = createRoutesFromElements(
     <Route path="contact" element={<Contact />} action={contactAction}/>
     <Route path="login" element={<Login />} />
     <Route path="cart" element={<Cart />} />
+    <Route path="products/:productId" element={<ProductDetail/>} 
+/>
   </Route>
 );
 
 // 將定義好的路由結構傳入 createBrowserRouter
 const appRouter = createBrowserRouter(routeDefinitions);
+
 
 createRoot(document.getElementById('root')).render(
   
@@ -48,6 +54,9 @@ createRoot(document.getElementById('root')).render(
       theme="light"                // 主題：light, dark, colored
       transition={Bounce}          // 動畫效果
     />
-    <RouterProvider router={appRouter} />
+    <CartProvider>
+     <RouterProvider router={appRouter} />
+    </CartProvider>
+    
   </StrictMode>,
 )

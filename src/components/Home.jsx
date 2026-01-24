@@ -42,7 +42,9 @@ export async function productsLoader() {
     // 參數 1 (Body): 錯誤訊息
     // 參數 2 (Options): 包含 status 等元數據
     throw new Response(
-      error.message || "Failed to fetch products. Please try again.", 
+     error.response?.data?.errorMessage || 
+      error.message || 
+      "Failed to fetch products. Please try again.",
       { status: error.status || 500 }
     );
   }
