@@ -1,13 +1,18 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faShoppingBasket, faTags, faAngleDown } from "@fortawesome/free-solid-svg-icons";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink,useLocation, useNavigate } from "react-router-dom";
 import { useCart } from "../store/cart-context";
 import { useAuth } from "../store/auth-context";
-import { useState } from "react";
+import { useEffect, useState,useRef } from "react";
+import { toast } from "react-toastify";
 
 export default function Header() {
+
+  const userMenuRef=useRef();
+  const location=useLocation();
+
   const { totalQuantity } = useCart();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated,logout } = useAuth();
 
   // 控制使用者選單開關
 const [isUserMenuOpen, setUserMenuOpen] = useState(false);
@@ -18,6 +23,7 @@ const [isAdminMenuOpen, setAdminMenuOpen] = useState(false);
 // 模擬角色權限 (未來會改為動態判斷)
 const isAdmin = true;
 
+const navigate=useNavigate();
 
 // 切換管理員選單
 const toggleAdminMenu = () => {
@@ -36,6 +42,27 @@ const toggleUserMenu = () => {
   // 定義下拉選單連結樣式
   const dropdownLinkClass =
     "block w-full text-left px-4 py-2 text-base font-primary font-semibold text-gray-700 hover:bg-gray-100 transition duration-200";
+
+
+    useEffect(()=>{
+      setUserMenuOpen(false);
+      setAdminMenuOpen(false);
+      const handleClickOutside=(e)=>{
+        if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+          setUserMenuOpen(false);
+          setAdminMenuOpen(false);
+        }
+      }
+      document.addEventListener("mousedown",handleClickOutside);
+    },[location.pathname]);
+
+
+    const handleLogout=(e)=>{
+      e.preventDefault();
+      logout();
+      toast.success("Logged out successfully!");
+      navigate("/home");
+    }
 
   return (
     <header className="border-b border-gray-300 sticky top-0 z-20 bg-gray-100 shadow-sm">
@@ -84,7 +111,9 @@ const toggleUserMenu = () => {
             <li className="relative group">
               {isAuthenticated ? (
                 /* --- 登入後顯示的區塊 (Dropdown Menu) --- */
-                <div className="relative">
+                <div 
+                ref={userMenuRef}
+                className="relative">
                   {/* User Button */}
                   <button 
                   onClick={toggleUserMenu}
@@ -134,7 +163,9 @@ const toggleUserMenu = () => {
                      
                       
 
-                      <li className="border-t border-gray-100">
+                      <li 
+                      onClick={handleLogout}
+                      className="border-t border-gray-100">
                         <Link to="/home" className={`${dropdownLinkClass} text-red-600 hover:bg-red-50 hover:text-red-700`}>
                           Logout
                         </Link>

@@ -20,6 +20,14 @@ import { AuthProvider } from './store/auth-context.jsx';
 import CheckoutForm from './components/CheckoutForm.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 
+import Profile from "./components/Profile.jsx";
+import Orders from "./components/Orders.jsx";
+import AdminOrders from "./components/admin/AdminOrders.jsx";
+import Messages from "./components/admin/Messages.jsx";
+import Register, { registerAction } from './components/Register.jsx';
+
+
+
 
 // 定義路由變數
 const routeDefinitions = createRoutesFromElements(
@@ -28,15 +36,20 @@ const routeDefinitions = createRoutesFromElements(
     <Route index element={<Home /> } loader={productsLoader}/>
     
     {/* 其他子路由 */}
-    <Route path="home" element={<Home />} loader={productsLoader}/>
-    <Route path="about" element={<About />} />
-    <Route path="contact" element={<Contact />} action={contactAction}/>
-    <Route path="login" element={<Login />} action={loginAction}/>
-    <Route path="cart" element={<Cart />} />
-    <Route path="products/:productId" element={<ProductDetail/>} />
+    <Route path="/home" element={<Home />} loader={productsLoader}/>
+    <Route path="/about" element={<About />} />
+    <Route path="/contact" element={<Contact />} action={contactAction}/>
+    <Route path="/login" element={<Login />} action={loginAction}/>
+    <Route path="/register" element={<Register/>} action={registerAction}/>
+    <Route path="/cart" element={<Cart />} />
+    <Route path="/products/:productId" element={<ProductDetail/>} />
     
     <Route element={<ProtectedRoute />}>
-    <Route path="checkout" element={<CheckoutForm />} />
+    <Route path="/checkout" element={<CheckoutForm />} />
+    <Route path="/profile" element={<Profile />} />
+    <Route path="/orders" element={<Orders />} />
+    <Route path="/admin/orders" element={<AdminOrders />} />
+    <Route path="/admin/messages" element={<Messages />} />
     </Route>
   </Route>
 );
