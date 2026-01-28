@@ -15,6 +15,10 @@ import { ToastContainer, Bounce } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css"; 
 import ProductDetail from './components/ProductDetail.jsx';
 import { CartProvider } from './store/cart-context';
+import { loginAction } from './components/Login.jsx';
+import { AuthProvider } from './store/auth-context.jsx';
+import CheckoutForm from './components/CheckoutForm.jsx';
+import ProtectedRoute from './components/ProtectedRoute.jsx';
 
 
 // 定義路由變數
@@ -27,10 +31,13 @@ const routeDefinitions = createRoutesFromElements(
     <Route path="home" element={<Home />} loader={productsLoader}/>
     <Route path="about" element={<About />} />
     <Route path="contact" element={<Contact />} action={contactAction}/>
-    <Route path="login" element={<Login />} />
+    <Route path="login" element={<Login />} action={loginAction}/>
     <Route path="cart" element={<Cart />} />
-    <Route path="products/:productId" element={<ProductDetail/>} 
-/>
+    <Route path="products/:productId" element={<ProductDetail/>} />
+    
+    <Route element={<ProtectedRoute />}>
+    <Route path="checkout" element={<CheckoutForm />} />
+    </Route>
   </Route>
 );
 
@@ -54,9 +61,10 @@ createRoot(document.getElementById('root')).render(
       theme="light"                // 主題：light, dark, colored
       transition={Bounce}          // 動畫效果
     />
+    <AuthProvider>
     <CartProvider>
      <RouterProvider router={appRouter} />
     </CartProvider>
-    
+    </AuthProvider>
   </StrictMode>,
 )
