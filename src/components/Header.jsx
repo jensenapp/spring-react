@@ -12,7 +12,10 @@ export default function Header() {
   const location=useLocation();
 
   const { totalQuantity } = useCart();
-  const { isAuthenticated,logout } = useAuth();
+
+  const { isAuthenticated,logout,user } = useAuth();
+
+  const isAdmin = user?.roles?.includes("ROLE_ADMIN")
 
   // 控制使用者選單開關
 const [isUserMenuOpen, setUserMenuOpen] = useState(false);
@@ -20,8 +23,8 @@ const [isUserMenuOpen, setUserMenuOpen] = useState(false);
 // 控制管理員選單開關
 const [isAdminMenuOpen, setAdminMenuOpen] = useState(false);
 
-// 模擬角色權限 (未來會改為動態判斷)
-const isAdmin = true;
+
+
 
 const navigate=useNavigate();
 
@@ -118,7 +121,7 @@ const toggleUserMenu = () => {
                   <button 
                   onClick={toggleUserMenu}
                   className={`flex items-center gap-1 focus:outline-none ${navLinkClass}`}>
-                    <span>Hello John Doe</span>
+                    <span>{`Hi,${user.name.length>5 ? user.name.slice(0,5) : user.name}`}</span>
                     <FontAwesomeIcon icon={faAngleDown} className="text-sm" />
                   </button>
 

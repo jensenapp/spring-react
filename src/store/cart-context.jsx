@@ -136,6 +136,8 @@ export const CartProvider = ({ children }) => {
    * 使用 reduce 累加每個商品的數量
    */
   const totalQuantity = cart.reduce((acc, item) => acc + item.quantity, 0);
+ 
+  const totalPrice=cart.reduce((acc,item)=>acc+item.quantity*item.price,0);
 
   // 返回 Provider 元件,提供購物車狀態和方法給子元件
   return (
@@ -145,7 +147,8 @@ export const CartProvider = ({ children }) => {
         addToCart,      // 新增商品的方法
         removeFromCart, // 移除商品的方法
         clearCart,      // 清空購物車的方法
-        totalQuantity   // 商品總數量
+        totalQuantity,   // 商品總數量
+        totalPrice
       }}
     >
       {children}

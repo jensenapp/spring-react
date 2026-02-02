@@ -4,9 +4,11 @@ import { Link } from "react-router-dom";
 import emptyCartImage from "../assets/util/emptycart.png";
 import { useCart } from "../store/cart-context";
 import CartTable from "./CratTable";
-
+import { useAuth } from "../store/auth-context";
 
 export default function Cart() {
+
+  const { isAuthenticated, user } = useAuth();
 
   const {cart}=useCart();
 

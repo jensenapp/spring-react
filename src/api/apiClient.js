@@ -1,19 +1,41 @@
 import axios from "axios";
+import Cookies from "js-cookie";
 
-// 建立一個 axios 實例 (Instance)
 const apiClient = axios.create({
-    // 1. 設定 Base URL
-    // 使用 import.meta.env 存取 Vite 的環境變數
-    baseURL: import.meta.env.VITE_API_BASE_URL,
-
-    headers: {
-    'Accept': 'application/json' 
-},
-    // 2. 設定 Timeout (逾時)
-    // 設定為 10000 毫秒 (即 10 秒)
-    // 如果後端在 10 秒內沒有回應，前端會拋出錯誤 (Error)
-    timeout: 10000,
+  baseURL: import.meta.env.VITE_API_BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  },
+  timeout: 10000,
+  withCredentials: true,
 });
 
-// 匯出這個設定好的實例，供其他組件使用
+apiClient.interceptors.request.use(
+  async (config) => {
+    const jwtToken = localStorage.getItem("jwtToken");
+    if (jwtToken) {
+      config.headers.Authorization = `Bearer ${jwtToken}`;
+    }
+    // Only fetch CSRF token for non-safe methods
+    const safeMethods = ["GET", "HEAD", "OPTIONS"];
+    if (!safeMethods.includes(config.method.toUpperCase())) {
+      let csrfToken = Cookies.get("XSRF-TOKEN");
+      if (!csrfToken) {
+        await axios.get(`${import.meta.env.VITE_API_BASE_URL}/csrf-token`, {
+          withCredentials: true,
+        });
+        csrfToken = Cookies.get("XSRF-TOKEN");
+        if (!csrfToken) {
+          throw new Error("Failed to retrieve CSRF token from cookies");
+        }
+      }
+      config.headers["X-XSRF-TOKEN"] = csrfToken;
+    }
+
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 export default apiClient;

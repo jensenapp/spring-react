@@ -20,14 +20,18 @@ import { AuthProvider } from './store/auth-context.jsx';
 import CheckoutForm from './components/CheckoutForm.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 
-import Profile from "./components/Profile.jsx";
+import Profile, { profileAction, profileLoader } from "./components/Profile.jsx";
 import Orders from "./components/Orders.jsx";
 import AdminOrders from "./components/admin/AdminOrders.jsx";
 import Messages from "./components/admin/Messages.jsx";
 import Register, { registerAction } from './components/Register.jsx';
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
 
 
-
+const stripePromise = loadStripe(
+  "pk_test_51SvzdWJH0hVLuzWZWPAgJMLQcgOvocdRXZNxrkhkQqUH0SnZCuRDYMjcHMIh4FKFDwbgepFjD1iq50WWGbPsdC5200cJJVRKM2"
+);
 
 // 定義路由變數
 const routeDefinitions = createRoutesFromElements(
@@ -46,7 +50,15 @@ const routeDefinitions = createRoutesFromElements(
     
     <Route element={<ProtectedRoute />}>
     <Route path="/checkout" element={<CheckoutForm />} />
-    <Route path="/profile" element={<Profile />} />
+    <Route 
+    path="/profile" 
+    element={<Profile />} 
+    action={profileAction} 
+    loader={profileLoader}
+    shouldRevalidate={({ actionResult }) => {
+          return !actionResult?.success;
+        }}
+    />
     <Route path="/orders" element={<Orders />} />
     <Route path="/admin/orders" element={<AdminOrders />} />
     <Route path="/admin/messages" element={<Messages />} />
@@ -61,6 +73,12 @@ const appRouter = createBrowserRouter(routeDefinitions);
 createRoot(document.getElementById('root')).render(
   
   <StrictMode>
+    <Elements stripe={stripePromise}>
+    <AuthProvider>
+    <CartProvider>
+     <RouterProvider router={appRouter} />
+    </CartProvider>
+    </AuthProvider>
     <ToastContainer
       position="top-center"        // 位置：上方置中
       autoClose={3000}             // 自動關閉時間：3秒
@@ -74,10 +92,6 @@ createRoot(document.getElementById('root')).render(
       theme="light"                // 主題：light, dark, colored
       transition={Bounce}          // 動畫效果
     />
-    <AuthProvider>
-    <CartProvider>
-     <RouterProvider router={appRouter} />
-    </CartProvider>
-    </AuthProvider>
+    </Elements>
   </StrictMode>,
 )
