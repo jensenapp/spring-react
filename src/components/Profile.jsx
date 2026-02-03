@@ -61,8 +61,9 @@ export default function Profile() {
     ...profileData,            
     ...actionData.profileData  
 };
+loginSuccess(localStorage.getItem("jwtToken"), updatedUser);
       }
-      loginSuccess(localStorage.getItem("jwtToken"), updatedUser);
+      
     }
   }, [actionData]); // 監聽 actionData 的變化
 
@@ -311,8 +312,8 @@ export default function Profile() {
               name="country"
               type="text"
               required
-              minLength={3}
-              maxLength={30}
+              minLength={2}
+              maxLength={2}
               placeholder="Your Country"
               value={profileData?.address.country}
               onChange={(e) =>

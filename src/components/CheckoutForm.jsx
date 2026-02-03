@@ -220,10 +220,10 @@ export default function CheckoutForm() {
       } else if (paymentIntent && paymentIntent.status === "succeeded") {
         // 用 toast 提示使用者付款成功
         toast.success("Payment successful!");
-
-        // =========================
-        // D) 付款成功後：建立訂單（寫入你的資料庫）
-        // =========================
+       
+// =========================
+// D) 付款成功後:建立訂單(寫入你的資料庫)
+// =========================
         try {
           await apiClient.post("/orders", {
             totalPrice: totalPrice,

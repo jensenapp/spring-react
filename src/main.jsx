@@ -27,6 +27,7 @@ import Messages from "./components/admin/Messages.jsx";
 import Register, { registerAction } from './components/Register.jsx';
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
+import OrderSuccess from './components/OrderSuccess.jsx';
 
 
 const stripePromise = loadStripe(
@@ -62,6 +63,7 @@ const routeDefinitions = createRoutesFromElements(
     <Route path="/orders" element={<Orders />} />
     <Route path="/admin/orders" element={<AdminOrders />} />
     <Route path="/admin/messages" element={<Messages />} />
+    <Route path="/order-success" element={<OrderSuccess />} />
     </Route>
   </Route>
 );
