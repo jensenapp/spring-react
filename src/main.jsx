@@ -21,13 +21,14 @@ import CheckoutForm from './components/CheckoutForm.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 
 import Profile, { profileAction, profileLoader } from "./components/Profile.jsx";
-import Orders from "./components/Orders.jsx";
-import AdminOrders from "./components/admin/AdminOrders.jsx";
+import Orders,{ordersLoader} from "./components/Orders.jsx";
+import AdminOrders,{adminOrderLoader} from "./components/admin/AdminOrders.jsx";
 import Messages from "./components/admin/Messages.jsx";
 import Register, { registerAction } from './components/Register.jsx';
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import OrderSuccess from './components/OrderSuccess.jsx';
+
 
 
 const stripePromise = loadStripe(
@@ -60,8 +61,8 @@ const routeDefinitions = createRoutesFromElements(
           return !actionResult?.success;
         }}
     />
-    <Route path="/orders" element={<Orders />} />
-    <Route path="/admin/orders" element={<AdminOrders />} />
+    <Route path="/orders" element={<Orders />} loader={ordersLoader}/>
+    <Route path="/admin/orders" element={<AdminOrders />} loader={adminOrderLoader}/>
     <Route path="/admin/messages" element={<Messages />} />
     <Route path="/order-success" element={<OrderSuccess />} />
     </Route>
