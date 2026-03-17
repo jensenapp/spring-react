@@ -24,7 +24,7 @@ export default function AdminOrders() {
     try {
       await apiClient.patch(`/admin/orders/${orderId}/confirm`);
       toast.success("Order confirmed.");
-      revalidator.revalidate(); // 🔁 Re-run loader
+      revalidator.revalidate(); // Re-run loader
     } catch (error) {
       toast.error("Failed to confirm order.");
     }
@@ -37,7 +37,7 @@ export default function AdminOrders() {
     try {
       await apiClient.patch(`/admin/orders/${orderId}/cancel`);
       toast.success("Order cancelled.");
-      revalidator.revalidate(); // 🔁 Re-run loader
+      revalidator.revalidate(); // Re-run loader
     } catch (error) {
       toast.error("Failed to cancel order.");
     }

@@ -1,173 +1,89 @@
 import React from "react";
 import PageTitle from "./PageTitle";
-import { Form,useActionData,useNavigation,useSubmit } from "react-router-dom";
+import { Form,useActionData,useNavigation} from "react-router-dom";
 import { useRef,useEffect } from "react";
 import apiClient from "../api/apiClient"; 
 import { toast } from "react-toastify";
 
 
 export default function Contact() {
+    const navigation = useNavigation();
+    const isSubmitting = navigation.state === "submitting";
+    const actionData = useActionData();
+    const formRef = useRef(null);
 
-  const submit=useSubmit();
+    useEffect(() => {
+        if (actionData?.success) {
+            formRef.current?.reset();
+            toast.success("Your message has been submitted successfully!");
+        }
+    }, [actionData]);
 
-  const navigation=useNavigation();
+    // 定義樣式變數 (保留 UI 樣式)
+    const labelStyle = "block text-lg font-semibold text-primary dark:text-light mb-2";
+    const textFieldStyle = "w-full px-4 py-2 text-base border rounded-md transition border-primary dark:border-light focus:ring focus:ring-dark dark:focus:ring-lighter focus:outline-none text-gray-800 dark:text-lighter bg-white dark:bg-gray-600 placeholder-gray-400 dark:placeholder-gray-300";
 
-  const isSubmitting=navigation.state==="submitting";
+    return (
+        <div className="max-w-[1152px] min-h-[852px] mx-auto px-6 py-8 font-primary bg-normalbg dark:bg-darkbg">
+            <PageTitle title="Contact Us" />
 
-  const actionData=useActionData();
+            <p className="max-w-[768px] mx-auto mt-8 text-gray-600 dark:text-lighter mb-8 text-center">
+                We’d love to hear from you! If you have any questions, feedback, or
+                suggestions, please don’t hesitate to reach out.
+            </p>
 
-  const formRef=useRef(null);
+            {/* 重點優化在這裡：直接在 onSubmit 處理攔截邏輯 */}
+            <Form
+                ref={formRef}
+                method="POST"
+                className="space-y-6 max-w-[768px] mx-auto"
+                onSubmit={(e) => {
+                    if (!window.confirm("Are you sure you want to submit the form?")) {
+                        e.preventDefault(); // 只有在「取消」時，才阻止表單送出
+                        toast.info("Form submission cancelled.");
+                    }
+                    // 如果按「確定」，什麼都不用做！
+                    // React Router 會自動攔截畫面跳轉，並把所有的 input 收集成 FormData 送給 action！
+                }}
+            >
+                {/* Name Field */}
+                <div>
+                    <label htmlFor="name" className={labelStyle}>Name</label>
+                    <input id="name" name="name" type="text" placeholder="Your Name" className={textFieldStyle} required minLength={5} maxLength={30} />
+                    {actionData?.errors?.name && <p className="text-red-500 text-sm mt-1">{actionData.errors.name}</p>}
+                </div>
 
-  useEffect(()=>{
-    if (actionData?.success) {
-      formRef.current?.reset();
-      toast.success("Your message has been submitted successfully!");
-    }
-  },[actionData]);
+                {/* Email and mobile Row */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <label htmlFor="email" className={labelStyle}>Email</label>
+                        <input id="email" name="email" type="email" placeholder="Your Email" className={textFieldStyle} required />
+                        {actionData?.errors?.email && <p className="text-red-500 text-sm mt-1">{actionData.errors.email}</p>}
+                    </div>
 
+                    <div>
+                        <label htmlFor="mobileNumber" className={labelStyle}>Mobile Number</label>
+                        <input id="mobileNumber" name="mobileNumber" type="tel" required pattern="^\d{10}$" title="Mobile number must be exactly 10 digits" placeholder="Your Mobile Number" className={textFieldStyle} />
+                        {actionData?.errors?.mobileNumber && <p className="text-red-500 text-sm mt-1">{actionData.errors.mobileNumber}</p>}
+                    </div>
+                </div>
 
-  const handleSubmit = (event) => {
-  // 重要：阻止瀏覽器的預設提交行為（避免頁面重新整理）
-  event.preventDefault();
-  
-  //顯示確認對話框
-  const userConfirmed = window.confirm(
-    "Are you sure you want to submit the form?"
-  );
-  
-  if (userConfirmed) {
-    // 取得表單資料
-    const formData = new FormData(formRef.current);
-    
-    // 手動觸發提交（會呼叫 action 函式）
-    submit(formData, { method: "post" });
-  } else {
-    // 使用者取消
-    toast.info("Form submission cancelled.");
-  }
-};
+                {/* Message Field */}
+                <div>
+                    <label htmlFor="message" className={labelStyle}>Message</label>
+                    <textarea id="message" name="message" rows="4" placeholder="Your Message" className={textFieldStyle} required minLength={5} maxLength={500} />
+                    {actionData?.errors?.message && <p className="text-red-500 text-sm mt-1">{actionData.errors.message}</p>}
+                </div>
 
-  // 定義樣式變數 (保留 UI 樣式)
-  const labelStyle =
-    "block text-lg font-semibold text-primary dark:text-light mb-2";
-  const textFieldStyle =
-    "w-full px-4 py-2 text-base border rounded-md transition border-primary dark:border-light focus:ring focus:ring-dark dark:focus:ring-lighter focus:outline-none text-gray-800 dark:text-lighter bg-white dark:bg-gray-600 placeholder-gray-400 dark:placeholder-gray-300";
-
-  return (
-    <div className="max-w-[1152px] min-h-[852px] mx-auto px-6 py-8 font-primary bg-normalbg dark:bg-darkbg">
-      {/* Page Title */}
-      <PageTitle title="Contact Us" />
-
-      {/* Contact Info */}
-      <p className="max-w-[768px] mx-auto mt-8 text-gray-600 dark:text-lighter mb-8 text-center">
-        We’d love to hear from you! If you have any questions, feedback, or
-        suggestions, please don’t hesitate to reach out.
-      </p>
-
-      {/* Contact Form - 改回標準 HTML form，移除 React Router 邏輯 */}
-      <Form ref={formRef} method="POST" className="space-y-6 max-w-[768px] mx-auto" onSubmit={handleSubmit}>
-        {/* Name Field */}
-        <div>
-          <label htmlFor="name" className={labelStyle}>
-            Name
-          </label>
-          <input
-            id="name"
-            name="name"
-            type="text"
-            placeholder="Your Name"
-            className={textFieldStyle}
-            required
-            minLength={5}
-            maxLength={30}
-          />
-          {actionData?.errors?.name && (
-    <p className="text-red-500 ...">
-        {actionData.errors.name}
-    </p>
-)}
+                {/* Submit Button */}
+                <div className="text-center">
+                    <button type="submit" disabled={isSubmitting} className="px-6 py-2 text-white dark:text-black text-xl rounded-md transition duration-200 bg-primary dark:bg-light hover:bg-dark dark:hover:bg-lighter disabled:opacity-50">
+                        {isSubmitting ? "Submitting..." : "Submit"}
+                    </button>
+                </div>
+            </Form>
         </div>
-
-        {/* Email and mobile Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {/* Email Field */}
-          <div>
-            <label htmlFor="email" className={labelStyle}>
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="Your Email"
-              className={textFieldStyle}
-              required
-            />
-            {actionData?.errors?.email && (
-  <p className="text-red-500 text-sm mt-1">
-    {actionData.errors.email}
-  </p>
-)}
-          </div>
-
-          {/* Mobile Field */}
-          <div>
-            <label htmlFor="mobileNumber" className={labelStyle}>
-              Mobile Number
-            </label>
-            <input
-              id="mobileNumber"
-              name="mobileNumber"
-              type="tel"
-              required
-              pattern="^\d{10}$"
-              title="Mobile number must be exactly 10 digits"
-              placeholder="Your Mobile Number"
-              className={textFieldStyle}
-            />
-            {actionData?.errors?.mobileNumber && (
-  <p className="text-red-500 text-sm mt-1">
-    {actionData.errors.mobileNumber}
-  </p>
-)}
-          </div>
-        </div>
-
-        {/* Message Field */}
-        <div>
-          <label htmlFor="message" className={labelStyle}>
-            Message
-          </label>
-          <textarea
-            id="message"
-            name="message"
-            rows="4"
-            placeholder="Your Message"
-            className={textFieldStyle}
-            required
-            minLength={5}
-            maxLength={500}
-          ></textarea>
-          {actionData?.errors?.message && (
-  <p className="text-red-500 text-sm mt-1">
-    {actionData.errors.message}
-  </p>
-)}
-        </div>
-
-        {/* Submit Button */}
-        <div className="text-center">
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="px-6 py-2 text-white dark:text-black text-xl rounded-md transition duration-200 bg-primary dark:bg-light hover:bg-dark dark:hover:bg-lighter"
-          >
-            {isSubmitting ? "Submitting...":"Submit"}
-          </button>
-        </div>
-      </Form>
-    </div>
-  );
+    );
 }
 
 export async function contactAction({request}){

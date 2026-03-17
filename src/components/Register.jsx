@@ -1,75 +1,78 @@
-import React, { useRef, useEffect } from "react";
-import {
-  Form,
-  Link,
-  useActionData,
-  useNavigation,
-  useNavigate,
-  useSubmit,
-} from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import apiClient from "../api/apiClient";
 import { toast } from "react-toastify";
 import PageTitle from "./PageTitle";
 
+// 共用的 CSS 樣式字串，保持 JSX 結構乾淨
+const LABEL_STYLE = "block text-lg font-semibold text-primary dark:text-light mb-2";
+const INPUT_STYLE = "w-full px-4 py-2 text-base border rounded-md transition border-primary dark:border-light focus:ring focus:ring-dark dark:focus:ring-lighter focus:outline-none text-gray-800 dark:text-lighter bg-white dark:bg-gray-600 placeholder-gray-400 dark:placeholder-gray-300";
+
 export default function Register() {
-  const actionData = useActionData();
-  const navigation = useNavigation();
   const navigate = useNavigate();
-  const formRef = useRef(null);
-  const submit = useSubmit();
+  
+  // 新增 State 來管理「載入狀態」與「錯誤訊息」
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState({}); 
 
-  const isSubmitting = navigation.state === "submitting";
+  // 傳統的表單送出處理函式
+  const handleSubmit = async (event) => {
+    event.preventDefault(); // 阻止表單預設的重整行為
+    setErrors({}); // 每次送出前先清空舊的錯誤訊息
 
-  useEffect(() => {
-    if (actionData?.success) {
-      navigate("/login");
-      toast.success("Registration completed successfully. Try login..");
-    }
-  }, [actionData]);
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const formData = new FormData(formRef.current);
-    if (!validatePasswords(formData)) {
-      return;
-    }
-    submit(formData, { method: "post" });
-  };
-
-  /**
-   * Validate Passwords Match
-   */
-  const validatePasswords = (formData) => {
+    // 取得表單內所有 input 的資料
+    const formData = new FormData(event.target);
     const password = formData.get("password");
     const confirmPwd = formData.get("confirmPwd");
 
+    // 1. 前端驗證：確認密碼是否一致
     if (password !== confirmPwd) {
       toast.error("Passwords do not match!");
-      return false;
+      setErrors({ confirmPwd: "Passwords do not match!" }); // 將錯誤存入 state
+      return; // 終止執行，不打 API
     }
-    return true;
-  };
 
-  const labelStyle =
-    "block text-lg font-semibold text-primary dark:text-light mb-2";
-  const textFieldStyle =
-    "w-full px-4 py-2 text-base border rounded-md transition border-primary dark:border-light focus:ring focus:ring-dark dark:focus:ring-lighter focus:outline-none text-gray-800 dark:text-lighter bg-white dark:bg-gray-600 placeholder-gray-400 dark:placeholder-gray-300";
+    // 2. 準備要傳給後端的資料
+    const registerData = {
+      name: formData.get("name"),
+      email: formData.get("email"),
+      mobileNumber: formData.get("mobileNumber"),
+      password: password,
+    };
+
+    // 3. 呼叫 API
+    try {
+      setIsSubmitting(true); // 開始載入
+      await apiClient.post("/auth/register", registerData);
+      
+      // 成功：跳轉並顯示成功訊息
+      toast.success("Registration completed successfully. Try login..");
+      navigate("/login");
+      
+    } catch (error) {
+      // 失敗：處理後端回傳的錯誤
+      if (error.response?.status === 400) {
+        // 將後端的欄位驗證錯誤存入 state，畫面就會自動更新顯示紅字
+        setErrors(error.response?.data); 
+      } else {
+        // 伺服器壞掉或其他非 400 的錯誤
+        toast.error(error.response?.data?.errorMessage || error.message || "Failed to submit. Please try again.");
+      }
+    } finally {
+      setIsSubmitting(false); // 無論成功失敗，最後都關閉載入狀態
+    }
+  };
 
   return (
     <div className="min-h-[752px] flex items-center justify-center font-primary dark:bg-darkbg">
       <div className="bg-white dark:bg-gray-700 shadow-md rounded-lg max-w-md w-full px-8 py-6">
         <PageTitle title="Register" />
 
-        <Form
-          method="POST"
-          ref={formRef}
-          onSubmit={handleSubmit}
-          className="space-y-6"
-        >
+        {/*標準的 <form> 並綁定 onSubmit 事件 */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          
           <div>
-            <label htmlFor="name" className={labelStyle}>
-              Name
-            </label>
+            <label htmlFor="name" className={LABEL_STYLE}>Name</label>
             <input
               id="name"
               type="text"
@@ -78,20 +81,17 @@ export default function Register() {
               required
               minLength={5}
               maxLength={30}
-              className={textFieldStyle}
+              className={INPUT_STYLE}
             />
-            {actionData?.errors?.name && (
-              <p className="text-red-500 text-sm mt-1">
-                {actionData.errors.name}
-              </p>
+            {/* 由 errors state 來讀取錯誤 */}
+            {errors?.name && (
+              <p className="text-red-500 text-sm mt-1">{errors.name}</p>
             )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="email" className={labelStyle}>
-                Email
-              </label>
+              <label htmlFor="email" className={LABEL_STYLE}>Email</label>
               <input
                 id="email"
                 type="email"
@@ -99,18 +99,15 @@ export default function Register() {
                 placeholder="Your Email"
                 autoComplete="email"
                 required
-                className={textFieldStyle}
+                className={INPUT_STYLE}
               />
-              {actionData?.errors?.email && (
-                <p className="text-red-500 text-sm mt-1">
-                  {actionData.errors.email}
-                </p>
+              {errors?.email && (
+                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
               )}
             </div>
+            
             <div>
-              <label htmlFor="mobileNumber" className={labelStyle}>
-                Mobile Number
-              </label>
+              <label htmlFor="mobileNumber" className={LABEL_STYLE}>Mobile Number</label>
               <input
                 id="mobileNumber"
                 type="tel"
@@ -119,20 +116,16 @@ export default function Register() {
                 required
                 pattern="^\d{10}$"
                 title="Mobile number must be exactly 10 digits"
-                className={textFieldStyle}
+                className={INPUT_STYLE}
               />
-              {actionData?.errors?.mobileNumber && (
-                <p className="text-red-500 text-sm mt-1">
-                  {actionData.errors.mobileNumber}
-                </p>
+              {errors?.mobileNumber && (
+                <p className="text-red-500 text-sm mt-1">{errors.mobileNumber}</p>
               )}
             </div>
           </div>
 
           <div>
-            <label htmlFor="password" className={labelStyle}>
-              Password
-            </label>
+            <label htmlFor="password" className={LABEL_STYLE}>Password</label>
             <input
               id="password"
               type="password"
@@ -142,19 +135,15 @@ export default function Register() {
               autoComplete="new-password"
               minLength={8}
               maxLength={20}
-              className={textFieldStyle}
+              className={INPUT_STYLE}
             />
-            {actionData?.errors?.password && (
-              <p className="text-red-500 text-sm mt-1">
-                {actionData.errors.password}
-              </p>
+            {errors?.password && (
+              <p className="text-red-500 text-sm mt-1">{errors.password}</p>
             )}
           </div>
 
           <div>
-            <label htmlFor="confirmPwd" className={labelStyle}>
-              Confirm Password
-            </label>
+            <label htmlFor="confirmPwd" className={LABEL_STYLE}>Confirm Password</label>
             <input
               id="confirmPwd"
               type="password"
@@ -164,11 +153,13 @@ export default function Register() {
               autoComplete="confirm-password"
               minLength={8}
               maxLength={20}
-              className={textFieldStyle}
+              className={INPUT_STYLE}
             />
+            {errors?.confirmPwd && (
+              <p className="text-red-500 text-sm mt-1">{errors.confirmPwd}</p>
+            )}
           </div>
 
-          {/* Submit */}
           <button
             type="submit"
             disabled={isSubmitting}
@@ -176,9 +167,8 @@ export default function Register() {
           >
             {isSubmitting ? "Registering..." : "Register"}
           </button>
-        </Form>
+        </form>
 
-        {/* Login Link */}
         <p className="text-center text-gray-600 dark:text-gray-400 mt-4">
           Already have an account?{" "}
           <Link
@@ -191,28 +181,4 @@ export default function Register() {
       </div>
     </div>
   );
-}
-
-export async function registerAction({ request }) {
-  const data = await request.formData();
-  const registerData = {
-    name: data.get("name"),
-    email: data.get("email"),
-    mobileNumber: data.get("mobileNumber"),
-    password: data.get("password"),
-  };
-  try {
-    const response = await apiClient.post("/auth/register", registerData);
-    return { success: true };
-  } catch (error) {
-    if (error.response?.status === 400) {
-      return { success: false, errors: error.response?.data };
-    }
-    throw new Response(
-      error.response?.data?.errorMessage ||
-        error.message ||
-        "Failed to submit your message. Please try again.",
-      { status: error.status || 500 }
-    );
-  }
 }

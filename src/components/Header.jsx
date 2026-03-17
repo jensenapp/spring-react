@@ -1,195 +1,147 @@
+import { useState, useEffect, useRef } from "react";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faShoppingBasket, faTags, faAngleDown } from "@fortawesome/free-solid-svg-icons";
-import { Link, NavLink,useLocation, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import { useCart } from "../store/cart-context";
 import { useAuth } from "../store/auth-context";
-import { useEffect, useState,useRef } from "react";
-import { toast } from "react-toastify";
+
+// 1. 將共用的 CSS Class 獨立在外部，保持 JSX 乾淨
+const NAV_LINK_CLASS = "text-center text-lg font-primary font-semibold text-primary py-2 hover:text-gray-600 transition duration-200";
+const DROPDOWN_LINK_CLASS = "block w-full text-left px-4 py-2 text-base font-primary font-semibold text-gray-700 hover:bg-gray-100 transition duration-200";
+
+// 2. 將主要導航列「資料化」，方便日後擴充
+const NAV_ITEMS = [
+  { name: "Home", path: "/" },
+  { name: "About", path: "/about" },
+  { name: "Contact", path: "/contact" },
+];
 
 export default function Header() {
-
-  const userMenuRef=useRef();
-  const location=useLocation();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const userMenuRef = useRef();
 
   const { totalQuantity } = useCart();
+  const { isAuthenticated, logout, user } = useAuth();
+  const isAdmin = user?.roles?.includes("ROLE_ADMIN");
 
-  const { isAuthenticated,logout,user } = useAuth();
+  // 3. 狀態管理
+  const [isUserMenuOpen, setUserMenuOpen] = useState(false);
+  const [isAdminMenuOpen, setAdminMenuOpen] = useState(false);
 
-  const isAdmin = user?.roles?.includes("ROLE_ADMIN")
+  // 4. 點擊外部自動關閉選單
+  useEffect(() => {
+    // 換頁時自動收起選單
+    setUserMenuOpen(false);
+    setAdminMenuOpen(false);
 
-  // 控制使用者選單開關
-const [isUserMenuOpen, setUserMenuOpen] = useState(false);
-
-// 控制管理員選單開關
-const [isAdminMenuOpen, setAdminMenuOpen] = useState(false);
-
-
-
-
-const navigate=useNavigate();
-
-// 切換管理員選單
-const toggleAdminMenu = () => {
-    setAdminMenuOpen(prev => !prev); 
-};
-
-// 切換使用者選單
-const toggleUserMenu = () => {
-    setUserMenuOpen(prev => !prev);
-};
-
-  // 定義導航連結樣式
-  const navLinkClass =
-    "text-center text-lg font-primary font-semibold text-primary py-2 hover:text-gray-600 transition duration-200";
-
-  // 定義下拉選單連結樣式
-  const dropdownLinkClass =
-    "block w-full text-left px-4 py-2 text-base font-primary font-semibold text-gray-700 hover:bg-gray-100 transition duration-200";
-
-
-    useEffect(()=>{
-      setUserMenuOpen(false);
-      setAdminMenuOpen(false);
-      const handleClickOutside=(e)=>{
-        if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
-          setUserMenuOpen(false);
-          setAdminMenuOpen(false);
-        }
+    const handleClickOutside = (e) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+        setUserMenuOpen(false);
+        setAdminMenuOpen(false);
       }
-      document.addEventListener("mousedown",handleClickOutside);
-    },[location.pathname]);
+    };
+    
+    document.addEventListener("mousedown", handleClickOutside);
+    
+    // 重要：清除副作用，避免 memory leak
+    return () => document.removeEventListener("mousedown", handleClickOutside); 
+  }, [location.pathname]);
 
+  // 5. 事件處理
+  const handleLogout = (e) => {
+    e.preventDefault();
+    logout();
+    toast.success("Logged out successfully!");
+    navigate("/home");
+  };
 
-    const handleLogout=(e)=>{
-      e.preventDefault();
-      logout();
-      toast.success("Logged out successfully!");
-      navigate("/home");
-    }
+  // 輔助函式：判斷 NavLink 是否為當前頁面
+  const getNavLinkStyle = ({ isActive }) =>
+    isActive ? `underline underline-offset-4 ${NAV_LINK_CLASS}` : NAV_LINK_CLASS;
 
   return (
     <header className="border-b border-gray-300 sticky top-0 z-20 bg-gray-100 shadow-sm">
       <div className="flex items-center justify-between mx-auto max-w-[1152px] px-6 py-4">
-        {/* Logo */}
+        
+        {/* === Logo 區塊 === */}
         <Link to="/" className="flex items-center gap-2 text-primary hover:text-gray-700 transition">
           <FontAwesomeIcon icon={faTags} className="h-8 w-8" />
           <span className="font-bold text-2xl font-primary">Eazy Stickers</span>
         </Link>
 
-        {/* Navigation */}
+        {/* === 導航列區塊 === */}
         <nav className="flex items-center z-10">
           <ul className="flex items-center space-x-8">
-            <li>
-              <NavLink
-                to="/"
-                className={({ isActive }) =>
-                  isActive ? `underline underline-offset-4 ${navLinkClass}` : navLinkClass
-                }
-              >
-                Home
-              </NavLink>
-            </li>
-            <li>
-              <NavLink
-                to="/about"
-                className={({ isActive }) =>
-                  isActive ? `underline underline-offset-4 ${navLinkClass}` : navLinkClass
-                }
-              >
-                About
-              </NavLink>
-            </li>
-            <li>
-              <NavLink
-                to="/contact"
-                className={({ isActive }) =>
-                  isActive ? `underline underline-offset-4 ${navLinkClass}` : navLinkClass
-                }
-              >
-                Contact
-              </NavLink>
-            </li>
+            
+            {/* 1. 動態渲染一般導航 (Home, About, Contact) */}
+            {NAV_ITEMS.map((item) => (
+              <li key={item.name}>
+                <NavLink to={item.path} className={getNavLinkStyle}>
+                  {item.name}
+                </NavLink>
+              </li>
+            ))}
 
-            {/* Login / User Dropdown Logic */}
+            {/* 2. 登入/使用者選單區塊 */}
             <li className="relative group">
-              {isAuthenticated ? (
-                /* --- 登入後顯示的區塊 (Dropdown Menu) --- */
-                <div 
-                ref={userMenuRef}
-                className="relative">
-                  {/* User Button */}
+              {!isAuthenticated ? (
+                <NavLink to="/login" className={getNavLinkStyle}>Login</NavLink>
+              ) : (
+                <div ref={userMenuRef} className="relative">
+                  {/* 使用者按鈕 */}
                   <button 
-                  onClick={toggleUserMenu}
-                  className={`flex items-center gap-1 focus:outline-none ${navLinkClass}`}>
-                    <span>{`Hi,${user.name.length>5 ? user.name.slice(0,5) : user.name}`}</span>
+                    onClick={() => setUserMenuOpen(!isUserMenuOpen)}
+                    className={`flex items-center gap-1 focus:outline-none ${NAV_LINK_CLASS}`}
+                  >
+                    <span>Hi, {user?.name?.length > 5 ? `${user.name.slice(0,5)}...` : user?.name}</span>
                     <FontAwesomeIcon icon={faAngleDown} className="text-sm" />
                   </button>
 
+                  {/* 下拉選單 */}
                   {isUserMenuOpen && ( 
-                  
-                  <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-lg rounded-md overflow-hidden z-50">
-                    <ul className="py-1">
-                      <li>
-                        <Link to="/profile" className={dropdownLinkClass}>
-                          Profile
-                        </Link>
-                      </li>
-                      <li>
-                        <Link to="/orders" className={dropdownLinkClass}>
-                          Orders
-                        </Link>
-                      </li>
+                    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-lg rounded-md overflow-hidden z-50">
+                      <ul className="py-1">
+                        <li><Link to="/profile" className={DROPDOWN_LINK_CLASS}>Profile</Link></li>
+                        <li><Link to="/orders" className={DROPDOWN_LINK_CLASS}>Orders</Link></li>
 
-
-                      {isAdmin && (<li className="border-t border-gray-100">
-                        <button 
-                          onClick={toggleAdminMenu}
-                          className={`flex items-center justify-between ${dropdownLinkClass} w-full`}>
-                          Admin
-                          <FontAwesomeIcon icon={faAngleDown} size="xs" />
-                        </button>
-
-                        {isAdminMenuOpen && (<ul className="bg-gray-50">
-                          <li>
-                            <Link to="/admin/orders" className={`${dropdownLinkClass} pl-8 text-sm`}>
-                              Orders
-                            </Link>
+                        {/* Admin 專屬選單 */}
+                        {isAdmin && (
+                          <li className="border-t border-gray-100">
+                            <button 
+                              onClick={() => setAdminMenuOpen(!isAdminMenuOpen)}
+                              className={`flex items-center justify-between w-full ${DROPDOWN_LINK_CLASS}`}
+                            >
+                              Admin
+                              <FontAwesomeIcon icon={faAngleDown} size="xs" />
+                            </button>
+                            {isAdminMenuOpen && (
+                              <ul className="bg-gray-50">
+                                <li><Link to="/admin/orders" className={`${DROPDOWN_LINK_CLASS} pl-8 text-sm`}>Orders</Link></li>
+                                <li><Link to="/admin/messages" className={`${DROPDOWN_LINK_CLASS} pl-8 text-sm`}>Messages</Link></li>
+                              </ul>
+                            )}
                           </li>
-                          <li>
-                            <Link to="/admin/messages" className={`${dropdownLinkClass} pl-8 text-sm`}>
-                              Messages
-                            </Link>
-                          </li>
-                        </ul>)}
-                        
-                      </li>)}
-                     
-                      
+                        )}
 
-                      <li 
-                      onClick={handleLogout}
-                      className="border-t border-gray-100">
-                        <Link to="/home" className={`${dropdownLinkClass} text-red-600 hover:bg-red-50 hover:text-red-700`}>
-                          Logout
-                        </Link>
-                      </li>
-                    </ul>
-                  </div>) 
-                }                
+                        {/* 登出按鈕 */}
+                        <li className="border-t border-gray-100">
+                          <button 
+                            onClick={handleLogout}
+                            className={`w-full text-left ${DROPDOWN_LINK_CLASS} text-red-600 hover:bg-red-50 hover:text-red-700`}
+                          >
+                            Logout
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <NavLink
-                  to="/login"
-                  className={({ isActive }) =>
-                    isActive ? `underline underline-offset-4 ${navLinkClass}` : navLinkClass
-                  }
-                >
-                  Login
-                </NavLink>
               )}
             </li>
 
-            {/* Shopping Cart Icon */}
+            {/* 3. 購物車圖示 */}
             <li>
               <Link to="/cart" className="relative flex items-center justify-center text-primary hover:text-gray-700 transition duration-200 p-2">
                 <FontAwesomeIcon icon={faShoppingBasket} className="text-2xl" />
@@ -200,6 +152,7 @@ const toggleUserMenu = () => {
                 )}
               </Link>
             </li>
+            
           </ul>
         </nav>
       </div>

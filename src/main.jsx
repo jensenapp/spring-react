@@ -24,10 +24,11 @@ import Profile, { profileAction, profileLoader } from "./components/Profile.jsx"
 import Orders,{ordersLoader} from "./components/Orders.jsx";
 import AdminOrders,{adminOrdersLoader} from "./components/admin/AdminOrders.jsx";
 import Messages, { messagesLoader } from "./components/admin/Messages.jsx";
-import Register, { registerAction } from './components/Register.jsx';
+import Register from './components/Register.jsx';
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import OrderSuccess from './components/OrderSuccess.jsx';
+import Password from './components/Password.jsx';
 
 
 
@@ -46,7 +47,7 @@ const routeDefinitions = createRoutesFromElements(
     <Route path="/about" element={<About />} />
     <Route path="/contact" element={<Contact />} action={contactAction}/>
     <Route path="/login" element={<Login />} action={loginAction}/>
-    <Route path="/register" element={<Register/>} action={registerAction}/>
+    <Route path="/register" element={<Register/>} />
     <Route path="/cart" element={<Cart />} />
     <Route path="/products/:productId" element={<ProductDetail/>} />
     
@@ -65,6 +66,7 @@ const routeDefinitions = createRoutesFromElements(
     <Route path="/admin/orders" element={<AdminOrders />} loader={adminOrdersLoader}/>
     <Route path="/admin/messages" element={<Messages />} loader={messagesLoader}/>
     <Route path="/order-success" element={<OrderSuccess />} />
+    <Route path="/change-password" element={<Password/>}/>
     </Route>
   </Route>
 );
