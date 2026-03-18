@@ -3,7 +3,7 @@ import PageTitle from "./PageTitle";
 import { Link } from "react-router-dom"; 
 import emptyCartImage from "../assets/util/emptycart.png";
 import { useCart } from "../store/cart-context";
-import CartTable from "./CratTable";
+import CartTable from "./CartTable";
 import { useAuth } from "../store/auth-context";
 
 export default function Cart() {

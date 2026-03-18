@@ -26,6 +26,7 @@ export default function CartTable() {
     // 從購物車中找到對應的商品
     const product = cart.find((item) => item.productId === productId);
     // 計算數量差異並更新(新數量 - 當前數量)
+    
     addToCart(product, quantity - (product?.quantity || 0));
   };
   

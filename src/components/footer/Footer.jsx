@@ -8,12 +8,12 @@ return(
     Built with
     <FontAwesomeIcon icon={faHeart} className="text-red-600 mx-1 animate-pulse" aria-hidden="true"/>
     by
-    <a href="https://eazybytes.com/" 
+    <a href="https://jensen-store.online/" 
        target="_blank" 
        aria-hidden="true"
         rel="noreferrer"
         className="text-primary font-semibold px-1 transition-colors duration-300 hover:text-emerald-400">
-      Eazybytes</a>
+      Jensen-Store</a>
   </footer>
 );
 }
